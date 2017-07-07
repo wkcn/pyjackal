@@ -3,12 +3,14 @@ import time
 import mygame
 from pygame.locals import *
 from Player import *
+import Players
 
 mygame.init()
 screen = mygame.screen
 
 player = Player()
 screen.set_viewer(player)
+players = Players.Players(1, [player])
 
 lastClock = time.clock() * 1000
 while 1:
@@ -20,6 +22,7 @@ while 1:
     intervalClock = nowClock - lastClock
     lastClock = nowClock
 
+    players.update()
     player.update(intervalClock)
     screen.fill((0, 0, 0))
     player.draw(screen)
