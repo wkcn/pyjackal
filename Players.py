@@ -27,25 +27,25 @@ class Players:
                 p.shot()
             if u[UP]:
                 if u[LEFT]:
-                    p.change_dir(1)
+                    p.go_dir(1)
                     continue
                 if u[RIGHT]:
-                    p.change_dir(7)
+                    p.go_dir(7)
                     continue
-                p.change_dir(0)
+                p.go_dir(0)
                 continue
             if u[DOWN]:
                 if u[LEFT]:
-                    p.change_dir(3)
+                    p.go_dir(3)
                     continue
                 if u[RIGHT]:
-                    p.change_dir(5)
+                    p.go_dir(5)
                     continue
-                p.change_dir(4)
+                p.go_dir(4)
                 continue
             if u[LEFT]:
-                p.change_dir(2)
+                p.go_dir(2)
                 continue
             if u[RIGHT]:
-                p.change_dir(6)
+                p.go_dir(6)
                 continue

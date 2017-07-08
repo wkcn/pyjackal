@@ -46,7 +46,7 @@ def read_stage(mid):
         plt.imshow(buf)
         plt.show()
         '''
-        if has_new:
+        if True or has_new:
             arr.extend(tb)
         else:
             print ("Ignore: %d" % r)
@@ -67,25 +67,13 @@ def read_stage(mid):
 
     for ti in arr:
         bb = ti[:,:,0] * 256 * 256 + ti[:,:,1] * 256 + ti[:,:,2]
-        if len(np.unique(bb)) > 4:
+        if True or len(np.unique(bb)) > 4:
             # remove background color
             b1 = (ti[:,:,0] == 255) & (ti[:,:,1] == 162) & (ti[:,:,2] == 0)
             b2 = (ti[:,:,0] == 198) & (ti[:,:,1] == 113) & (ti[:,:,2] == 0)
-            b = (b1 | b2)
-            ti[b, :] = 0.0
-            '''
-            bestne = -np.inf
-            best = None
-            beb = None
-            for mp in four:
-                eb = (ti == mp).all(2)
-                ne = np.sum(eb)
-                if ne > bestne:
-                    bestne = ne
-                    best = mp
-                    beb = eb
-            #ti[beb, :] = 0
-            '''
+            if False and np.sum(b1) + np.sum(b2) <= 32 * 32 * 0.9:
+                b = (b1 | b2)
+                ti[b, :] = 0.0
             #plt.subplot(121)
             #plt.imshow(ti)
             #plt.subplot(122)

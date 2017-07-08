@@ -82,6 +82,25 @@ def load_sub_img(filename, siz):
         sub_resource[filename] = (tex, (w,h))
     return sub_resource[filename]
 
+grid_resource = {}
+def load_grid_img(filename, siz):
+    w, h = siz
+    if filename not in grid_resource:
+        im = pygame.image.load(filename) 
+        pw, ph = im.get_size()
+        f = pw // w
+        d = ph // h
+        ra = ScreenBox.ScreenBox.RATIO
+        tw = int(w * ra)
+        th = int(h * ra)
+        try:
+            tex = [[pygame.transform.smoothscale(im.subsurface((w * c, h * r), (w,h)), (tw, th)).convert_alpha() for c in range(f)] for r in range(d)]
+        except:
+            tex = [[pygame.transform.scale(im.subsurface((w * c, h * r), (w,h)), (tw, th)).convert_alpha() for c in range(f)] for r in range(d)]
+        grid_resource[filename] = (tex, (f,d))
+    return grid_resource[filename]
+
+
 def smoothscale(im, siz):
     r = ScreenBox.ScreenBox.RATIO
     tw = int(siz[0] * r)

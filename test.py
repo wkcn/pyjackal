@@ -4,6 +4,7 @@ import mygame
 from pygame.locals import *
 from Player import *
 import Players
+import Mapper
 
 mygame.init()
 screen = mygame.screen
@@ -11,6 +12,8 @@ screen = mygame.screen
 player = Player()
 screen.set_viewer(player)
 players = Players.Players(1, [player])
+mp = Mapper.Mapper()
+mp.load("./data/map/jungle.tmx")
 
 lastClock = time.clock() * 1000
 while 1:
@@ -24,6 +27,8 @@ while 1:
 
     players.update()
     player.update(intervalClock)
+
     screen.fill((0, 0, 0))
+    mp.draw(screen)
     player.draw(screen)
     mygame.display.update()
