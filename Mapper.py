@@ -1,10 +1,14 @@
 #coding=utf-8
 import mygame
 import pytmx 
+from Defines import *
+import matplotlib.pyplot as plt
 
+GROUND_COLORS = [(255,162,0), (198,113,0)]
 class Mapper:
     def __init__(self):
         self.tex = []
+        self.mask = [] # value is 1 if it's an obstacle
         self.mapping = dict()
         self.width = 0
         self.height = 0
@@ -26,9 +30,16 @@ class Mapper:
                 r = pos[1] // 32
                 c = pos[0] // 32
                 gim, siz = mygame.load_grid_img(name, (32, 32))
+                gmask = mygame.load_grid_mask(name, (32, 32), GROUND_COLORS)
                 tex = gim[r][c]
+                mask = gmask[r][c]
                 tid = len(self.tex)
                 self.tex.append(tex)
+                self.mask.append(mask)
+        
+                #print ("=====", (r,c))
+                #print_bits(mask)
+
             self.tids[y][x] = tid
     def update(self, clcok):
         pass

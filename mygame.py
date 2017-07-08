@@ -2,6 +2,8 @@
 from pygame.locals import *
 import pygame
 import ScreenBox
+from scipy.misc import imread, imsave
+import numpy as np
 
 class image:
     resource = {}
@@ -75,12 +77,28 @@ def load_sub_img(filename, siz):
         ra = ScreenBox.ScreenBox.RATIO
         tw = int(w * ra)
         th = int(h * ra)
+        #mask = [[pygame.mask.from_surface(im.subsurface((w * c, h * r), (w, h))) for c in range(f)] for r in range(d)]
         try:
             tex = [[pygame.transform.smoothscale(im.subsurface((w * c, h * r), (w,h)), (tw, th)).convert_alpha() for c in range(f)] for r in range(d)]
         except:
             tex = [[pygame.transform.scale(im.subsurface((w * c, h * r), (w,h)), (tw, th)).convert_alpha() for c in range(f)] for r in range(d)]
         sub_resource[filename] = (tex, (w,h))
     return sub_resource[filename]
+
+sub_mask = {}
+def load_sub_mask(filename, siz):
+    f, d = siz
+    if filename not in sub_mask:
+        im = imread(filename)
+        ph, pw, t = im.shape
+        w = pw // f
+        h = ph // d
+        if t < 4:
+            b = np.ones((w,h)).astype(np.bool)
+        else:
+            b = (im[:,:,3] != 0)
+        sub_mask[filename] = [[b[(r*h):(r+1)*h, (c*w):(c+1)*w] for c in range(f)] for r in range(d)] 
+    return sub_mask[filename]
 
 grid_resource = {}
 def load_grid_img(filename, siz):
@@ -93,12 +111,42 @@ def load_grid_img(filename, siz):
         ra = ScreenBox.ScreenBox.RATIO
         tw = int(w * ra)
         th = int(h * ra)
+        #color = (255,162,0)
+        #mask = [[pygame.mask.from_threshold(im.subsurface((w * c, h * r), (w, h)), color) for c in range(f)] for r in range(d)]
+
+        '''
+        mask = mask[4][5]
+        siz = mask.get_size()
+        for y in range(siz[1]):
+            for x in range(siz[0]):
+                print ((mask.get_at((x,y)))),
+            print "" 
+        fewaf
+        '''
         try:
             tex = [[pygame.transform.smoothscale(im.subsurface((w * c, h * r), (w,h)), (tw, th)).convert_alpha() for c in range(f)] for r in range(d)]
         except:
             tex = [[pygame.transform.scale(im.subsurface((w * c, h * r), (w,h)), (tw, th)).convert_alpha() for c in range(f)] for r in range(d)]
         grid_resource[filename] = (tex, (f,d))
     return grid_resource[filename]
+
+grid_mask = {}
+def load_grid_mask(filename, siz, colors = []):
+    w, h = siz
+    if filename not in grid_mask:
+        im = imread(filename)
+        ph, pw, t = im.shape
+        f = pw // w
+        d = ph // h
+        if t < 4:
+            b = np.ones((w,h)).astype(np.bool)
+        else:
+            b = (im[:,:,3] != 0)
+        for color in colors:
+            bm = (im[:,:,0] == color[0]) & (im[:,:,1] == color[1]) & (im[:,:,2] == color[2])
+            b &= (~bm)
+        grid_mask[filename] = [[b[(r*h):(r+1)*h, (c*w):(c+1)*w] for c in range(f)] for r in range(d)] 
+    return grid_mask[filename]
 
 
 def smoothscale(im, siz):

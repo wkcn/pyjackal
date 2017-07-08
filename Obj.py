@@ -1,5 +1,6 @@
 #coding=utf-8
 import mygame
+import pygame
 import math
 from Defines import *
 
@@ -18,7 +19,7 @@ DIRS_C = 1.0
 DIRS_D = 0.8
 DIRS8_V = [(0.0, -DIRS_C), (-DIRS_D, -DIRS_D), (-DIRS_C, 0.0), (-DIRS_D, DIRS_D), (0.0, DIRS_C), (DIRS_D, DIRS_D), (DIRS_C, 0.0), (DIRS_D, -DIRS_D)]
 
-TURNING_CLOCK = 40
+TURNING_CLOCK = 50
 SHAKING_CLOCK = 60
 
 class Obj(object):
@@ -33,15 +34,21 @@ class Obj(object):
         self.v = 2.0
         self.can_move = True
         self.want_to_move = False
-        self.tex, self.pic_size = self.load_pic8("./res/pic/jackal.png")
+        self.tex, self.mask, self.pic_size = self.load_pic8(filename)
+        #print_bits(self.mask[0])
+        #print ("====")
         self.moveto(pos)
     def load_pic8(self, filename):
         tex, pic_size = mygame.load_sub_img(filename, (4, 2))
+        masko = mygame.load_sub_mask(filename, (4, 2))
         res = [None for _ in range(8)]
+        mask = [None for _ in range(8)]
         for r in range(2):
             for c in range(4):
-                res[DIRS8[r][c]] = tex[r][c]
-        return res, pic_size
+                d = DIRS8[r][c]
+                res[d] = tex[r][c]
+                mask[d] = masko[r][c]
+        return res, mask, pic_size
     def draw(self, screen):
         screen.blit(self.tex[self.dir], (self.realx, self.realy + self.realy_shake)) 
     def update(self, clock):

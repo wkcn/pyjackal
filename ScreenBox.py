@@ -3,8 +3,8 @@
 class ScreenBox:
     RATIO = 3.0
     SCROLL_LRGRID = 3
-    SCROLL_UGRID = 4
-    SCROLL_DGRID = 3
+    SCROLL_UGRID = 3
+    SCROLL_DGRID = 2
     GRID_SIZE = 32
     SCROLL_UP = 0
     SCROLL_DOWN = 0
