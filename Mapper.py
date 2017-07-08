@@ -17,7 +17,7 @@ class Mapper:
         layer = self.tiled_map.layers[0]
         self.width = layer.width
         self.height = layer.height
-        self.tids = [[0] * layer.width] * layer.height
+        self.tids = [[0 for _ in range(layer.width)] for _ in range(layer.height)]
         for x, y, img in layer.tiles():
             name, pos, _ = img
             if (name, pos) in self.mapping:

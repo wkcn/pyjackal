@@ -2,24 +2,26 @@
 
 class ScreenBox:
     RATIO = 3.0
-    SCROLL_LRGRID = 6
-    SCROLL_UDGRID = 5
-    GRID_SIZE = 40
+    SCROLL_LRGRID = 3
+    SCROLL_UGRID = 4
+    SCROLL_DGRID = 3
+    GRID_SIZE = 32
     SCROLL_UP = 0
     SCROLL_DOWN = 0
     SCROLL_LEFT = 0
     SCROLL_RIGHT = 0
     def __init__(self, surface):
         self.surface = surface
-        self.display_x = 200
+        self.display_x = 0
         self.display_y = 0
-        self.boxW, self.boxH = self.surface.get_size()
-        SCROLL_LRSIZE = self.SCROLL_LRGRID * self.GRID_SIZE
-        SCROLL_UDSIZE = self.SCROLL_UDGRID * self.GRID_SIZE
-        self.SCROLL_UP = SCROLL_UDSIZE
+        boxW, boxH = self.surface.get_size()
+        self.boxRW = boxW * 1.0 / ScreenBox.RATIO
+        self.boxRH = boxH * 1.0 / ScreenBox.RATIO
+        SCROLL_LRSIZE = ScreenBox.SCROLL_LRGRID * ScreenBox.GRID_SIZE
+        self.SCROLL_UP = ScreenBox.SCROLL_UGRID * ScreenBox.GRID_SIZE
         self.SCROLL_LEFT = SCROLL_LRSIZE
-        self.SCROLL_DOWN = self.boxH - SCROLL_UDSIZE 
-        self.SCROLL_RIGHT = self.boxW - SCROLL_LRSIZE 
+        self.SCROLL_DOWN = self.boxRH - ScreenBox.SCROLL_DGRID * ScreenBox.GRID_SIZE 
+        self.SCROLL_RIGHT = self.boxRW - SCROLL_LRSIZE 
         self.player = 0
         self.last_rx = 0
         self.last_ry = 0
@@ -32,14 +34,13 @@ class ScreenBox:
         self.player = player
         self.last_rx = self.player.realx
         self.last_ry = self.player.realy
-        dx = self.player.realx - self.boxW / 2
-        dy = self.player.realy - self.boxH / 2
+        dx = self.player.realx - self.boxRW / 2.0
+        dy = self.player.realy - self.boxRH / 2.0
         self.display_x = min(max(self.min_dx, dx), self.max_dx)
         self.display_y = min(max(self.min_dy, dy), self.max_dy)
-    def set_mapdata(self, mapData):
-        self.mapData = mapData
-        self.max_dx = max(0, self.mapData.Width * self.GRID_SIZE - self.boxW)
-        self.max_dy = max(0, self.mapData.Height * self.GRID_SIZE - self.boxH + 80)
+    def set_mapper(self, mp):
+        self.max_dx = max(0, mp.width * self.GRID_SIZE - self.boxRW)
+        self.max_dy = max(0, mp.height * self.GRID_SIZE - self.boxRH)
     def fill(self, color):
         self.surface.fill(color)
     def blit(self, pic, pos):
@@ -57,12 +58,13 @@ class ScreenBox:
         #self.surface.blit(pic, pos)
     def is_in_box(self, pos):
         if pos[0] > 0 and pos[1] > 0:
-            if pos[0] < self.boxW and pos[1] < self.boxH:
+            if pos[0] < self.boxRW and pos[1] < self.boxRH:
                 return True
         return False
     def scroll(self):
         dx = self.player.realx - self.display_x
         dy = self.player.realy - self.display_y
+        #print (dx, dy, self.SCROLL_DOWN)
         if dx < self.SCROLL_LEFT:
             if self.player.realx < self.last_rx:
                 self.display_x = max(self.display_x - (self.last_rx - self.player.realx), self.min_dx)

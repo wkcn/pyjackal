@@ -21,8 +21,8 @@ DIRS8_V = [(0.0, -DIRS_C), (-DIRS_D, -DIRS_D), (-DIRS_C, 0.0), (-DIRS_D, DIRS_D)
 TURNING_CLOCK = 40
 SHAKING_CLOCK = 60
 
-class Obj:
-    def __init__(self):
+class Obj(object):
+    def __init__(self, filename, pos):
         self.realPos = [0, 0]
         self.tarPos = [0, 0]
         self.realy_shake = 0
@@ -33,6 +33,8 @@ class Obj:
         self.v = 2.0
         self.can_move = True
         self.want_to_move = False
+        self.tex, self.pic_size = self.load_pic8("./res/pic/jackal.png")
+        self.moveto(pos)
     def load_pic8(self, filename):
         tex, pic_size = mygame.load_sub_img(filename, (4, 2))
         res = [None for _ in range(8)]
@@ -63,12 +65,21 @@ class Obj:
                 self.shaking_clock = 0
         self.want_to_move = False
 
+    def moveto(self, pos):
+        self.realPos[0] = self.tarPos[0] = pos[0] * 32
+        self.realPos[1] = self.tarPos[1] = pos[1] * 32
     @property
     def realx(self):
         return self.realPos[0]
     @property
     def realy(self):
         return self.realPos[1]
+    @realx.setter
+    def realx(self, value):
+        self.realPos[0] = value
+    @realy.setter
+    def realy(self, value):
+        self.realPos[1] = value
     def running(self):
         return self.realPos[0] != self.tarPos[0] or self.realPos[1] != self.tarPos[1]
     def go_dir(self, d):
