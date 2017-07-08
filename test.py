@@ -5,6 +5,7 @@ from pygame.locals import *
 from Player import *
 import Players
 import Mapper
+import Obj
 from sys import exit
 
 mygame.init()
@@ -15,6 +16,7 @@ players = Players.Players(1, [player])
 
 mp = Mapper.Mapper()
 mp.load("./data/map/jungle.tmx")
+Obj.Obj.mapper = mp
 
 screen.set_mapper(mp)
 screen.set_viewer(player)

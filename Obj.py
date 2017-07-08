@@ -2,6 +2,7 @@
 import mygame
 import pygame
 import math
+import numpy as np
 from Defines import *
 
 '''
@@ -23,6 +24,7 @@ TURNING_CLOCK = 50
 SHAKING_CLOCK = 60
 
 class Obj(object):
+    mapper = None
     def __init__(self, filename, pos):
         self.realPos = [0, 0]
         self.tarPos = [0, 0]
@@ -89,16 +91,48 @@ class Obj(object):
         self.realPos[1] = value
     def running(self):
         return self.realPos[0] != self.tarPos[0] or self.realPos[1] != self.tarPos[1]
+    def througed(self, v):
+        tx = int(self.tarPos[0] + v[0])
+        ty = int(self.tarPos[1] + v[1])
+        ix = (tx) // 32
+        iy = (ty) // 32
+        # 9 GRIDS
+        gr = np.zeros((32 * 3, 32 * 3)).astype(np.bool)
+        mm = np.zeros((32 * 3, 32 * 3)).astype(np.bool)
+        for ax in [-1,0,1]:
+            nx = ix + ax
+            if nx < 0 or nx >= Obj.mapper.width:
+                continue
+            for ay in [-1,0,1]:
+                ny = iy + ay
+                if ny < 0 or ny >= Obj.mapper.height:
+                    continue
+                tid = Obj.mapper.tids[ny][nx] 
+                gr[(ay+1)*32:(ay+2)*32, (ax+1)*32:(ax+2)*32] = Obj.mapper.mask[tid]
+        dx = tx - ix * 32
+        dy = ty - iy * 32
+        w, h = self.pic_size
+        min_x = (dx + 32)
+        min_y = (dy + 32)
+        max_x = min(min_x + w, 32 * 3)
+        max_y = min(min_y + h, 32 * 3)
+        mx = max_x - min_x
+        my = max_y - min_y
+        bb = gr[min_y:max_y, min_x:max_x] & self.mask[self.dir][:my, :mx]
+        nb = np.sum(bb)
+        return nb < 16
+
     def go_dir(self, d):
         if self.dir != d:
             self.change_dir(d)
         else:
             # moveto
+            self.want_to_move = True
             if not self.running():
                 bv = DIRS8_V[self.dir]
-                self.tarPos[0] += bv[0]
-                self.tarPos[1] += bv[1]
-            self.want_to_move = True
+                if self.througed(bv):
+                    self.tarPos[0] += bv[0]
+                    self.tarPos[1] += bv[1]
     def change_dir(self, d):
         if self.turning_clock < TURNING_CLOCK:
             return

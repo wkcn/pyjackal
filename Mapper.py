@@ -12,6 +12,7 @@ class Mapper:
         self.mapping = dict()
         self.width = 0
         self.height = 0
+        self.tids = None
     def load(self, filename):
         print ("Loading Map: %s" % filename)
         self.tiled_map = pytmx.TiledMap(filename)
