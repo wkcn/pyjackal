@@ -16,6 +16,7 @@ players = Players.Players(1, [player])
 
 mp = Mapper.Mapper()
 mp.load("./data/map/jungle.tmx")
+mp.set_viewer(player)
 Obj.Obj.mapper = mp
 
 screen.set_mapper(mp)

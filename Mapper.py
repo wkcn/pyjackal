@@ -13,6 +13,7 @@ class Mapper:
         self.width = 0
         self.height = 0
         self.tids = None
+        self.player = None # TODO: Multi Players
     def load(self, filename):
         print ("Loading Map: %s" % filename)
         self.tiled_map = pytmx.TiledMap(filename)
@@ -45,13 +46,21 @@ class Mapper:
     def update(self, clcok):
         pass
     def draw(self, screen):
-        for y in range(self.height):
-            for x in range(self.width):
+        px = self.player.x
+        py = self.player.y
+        min_y = max(0, py - 8)
+        max_y = min(self.height, py + 9)
+        min_x = max(0, px - 8)
+        max_x = min(self.width, px + 9)
+        for y in range(min_y, max_y):
+            for x in range(min_x, max_x):
                 tid = self.tids[y][x]
                 tex = self.tex[tid]
                 screen.blit(tex, (x * 32, y * 32))
     def get_tex(self, img):
         return None
+    def set_viewer(self, player):
+        self.player = player
 
 if __name__ == "__main__":
     mp = Mapper()

@@ -114,6 +114,12 @@ class Obj(object):
     @property
     def center_y(self):
         return self.realy + self.pic_size[1] // 2
+    @property
+    def x(self):
+        return int(self.center_x // 32)
+    @property
+    def y(self):
+        return int(self.center_y // 32)
     def running(self):
         return self.realPos[0] != self.tarPos[0] or self.realPos[1] != self.tarPos[1]
     def througed(self, v):
