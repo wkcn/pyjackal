@@ -2,7 +2,7 @@
 from pygame.locals import *
 import pygame
 import ScreenBox
-from scipy.misc import imread, imsave
+from scipy.misc import imread, imsave, imresize
 import numpy as np
 
 class image:
@@ -66,9 +66,37 @@ class display:
         nwin = [int(round(t * r)) for t in win]
         pygame.display.update(nwin)
 
+
+DIR_MASKS = dict()
+mask = [np.zeros((32,32)).astype(np.bool) for _ in range(8)]
+
+mask[0][:16, :] = True
+mask[4][16:, :] = True 
+mask[2][:, :16] = True 
+mask[6][:, 16:] = True 
+
+def set_dir_mask(mask, d, siz, func):
+    for r in range(siz):
+        for c in range(siz):
+            if func(c, r):
+                mask[d][r, c] = True
+
+set_dir_mask(mask, 1, 32, lambda x,y : 31 - x >= y)
+set_dir_mask(mask, 5, 32, lambda x,y : 31 - x <= y)
+set_dir_mask(mask, 3, 32, lambda x,y : y >= x)
+set_dir_mask(mask, 7, 32, lambda x,y : y <= x)
+
+DIR_MASKS[32] = mask
+
+def get_dir_mask(d, siz):
+    if siz not in DIR_MASKS:
+        DIR_MASKS[siz] = [imresize(DIR_MASKS[32][d], siz, interp = "nearest") != 0 for d in range(8)] 
+    return DIR_MASKS[siz][d]
+
+
 sub_resource = {}
 def load_sub_img(filename, siz):
-    f, d = siz
+    d, f = siz
     if filename not in sub_resource:
         im = pygame.image.load(filename) 
         pw, ph = im.get_size()
@@ -87,7 +115,7 @@ def load_sub_img(filename, siz):
 
 sub_mask = {}
 def load_sub_mask(filename, siz):
-    f, d = siz
+    d, f = siz
     if filename not in sub_mask:
         im = imread(filename)
         ph, pw, t = im.shape
@@ -168,3 +196,4 @@ font = pygame.font
 transform = pygame.transform
 event = pygame.event
 key = pygame.key
+

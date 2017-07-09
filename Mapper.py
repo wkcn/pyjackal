@@ -14,6 +14,7 @@ class Mapper:
         self.height = 0
         self.tids = None
         self.player = None # TODO: Multi Players
+        self.effects = []
     def load(self, filename):
         print ("Loading Map: %s" % filename)
         self.tiled_map = pytmx.TiledMap(filename)
@@ -43,8 +44,13 @@ class Mapper:
                 #print_bits(mask)
 
             self.tids[y][x] = tid
-    def update(self, clcok):
-        pass
+    def update(self, clock):
+        new_effects = []
+        for e in self.effects:
+            e.update(clock)
+            if not e.dead:
+                new_effects.append(e)
+        self.effects = new_effects
     def draw(self, screen):
         px = self.player.x
         py = self.player.y
@@ -57,6 +63,8 @@ class Mapper:
                 tid = self.tids[y][x]
                 tex = self.tex[tid]
                 screen.blit(tex, (x * 32, y * 32))
+        for e in self.effects:
+            e.draw(screen)
     def get_tex(self, img):
         return None
     def set_viewer(self, player):

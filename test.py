@@ -12,6 +12,7 @@ mygame.init()
 screen = mygame.screen
 
 player = Player()
+player.moveto((3, 89))
 players = Players.Players(1, [player])
 
 mp = Mapper.Mapper()
@@ -47,6 +48,7 @@ while 1:
 
     players.update()
     player.update(intervalClock)
+    mp.update(intervalClock)
     screen.scroll()
 
     screen.fill((0, 0, 0))

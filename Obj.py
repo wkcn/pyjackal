@@ -17,34 +17,15 @@ from Defines import *
 DIRS8 = [[1,0,7,6], [2,3,4,5]]
 
 DIRS_C = 1.0
-DIRS_D = 0.8
+DIRS_D = math.sqrt(2.0) / 2.0
 DIRS8_V = [(0.0, -DIRS_C), (-DIRS_D, -DIRS_D), (-DIRS_C, 0.0), (-DIRS_D, DIRS_D), (0.0, DIRS_C), (DIRS_D, DIRS_D), (DIRS_C, 0.0), (DIRS_D, -DIRS_D)]
-
-DIR_MASK = [np.zeros((32,32)).astype(np.bool) for _ in range(8)]
-DIR_MASK[0][:16, :] = 1
-DIR_MASK[4][16:, :] = 1
-DIR_MASK[2][:, :16] = 1
-DIR_MASK[6][:, 16:] = 1
-
-def set_dir_mask(d, func):
-    for r in range(32):
-        for c in range(32):
-            if func(c, r):
-                DIR_MASK[d][r, c] = True
-
-set_dir_mask(1, lambda x,y : 31 - x >= y)
-set_dir_mask(5, lambda x,y : 31 - x <= y)
-set_dir_mask(3, lambda x,y : y >= x)
-set_dir_mask(7, lambda x,y : y <= x)
-for d in range(8):
-    DIR_MASK[d] = (DIR_MASK[d] == 1)
 
 TURNING_CLOCK = 50
 SHAKING_CLOCK = 60
 
 class Obj(object):
     mapper = None
-    def __init__(self, filename, pos):
+    def __init__(self, filename, num_dir = 8):
         self.realPos = [0, 0]
         self.tarPos = [0, 0]
         self.realy_shake = 0
@@ -55,20 +36,35 @@ class Obj(object):
         self.v = 2.0
         self.can_move = True
         self.want_to_move = False
-        self.tex, self.mask, self.pic_size = self.load_pic8(filename)
-        #print_bits(self.mask[0])
-        #print ("====")
-        self.moveto(pos)
-    def load_pic8(self, filename):
-        tex, pic_size = mygame.load_sub_img(filename, (4, 2))
-        masko = mygame.load_sub_mask(filename, (4, 2))
-        res = [None for _ in range(8)]
-        mask = [None for _ in range(8)]
-        for r in range(2):
-            for c in range(4):
-                d = DIRS8[r][c]
-                res[d] = tex[r][c]
-                mask[d] = masko[r][c]
+        self.num_dir = num_dir
+        self.load_tex(filename)
+    def load_tex(self, filename):
+        self.tex, self.mask, self.pic_size = self.load_pic(filename, self.num_dir)
+
+    def load_pic(self, filename, dirnum):
+        if dirnum == 8:
+            grid = (2, 4)
+        else:
+            grid = (1, dirnum)
+        tex, pic_size = mygame.load_sub_img(filename, grid)
+        masko = mygame.load_sub_mask(filename, grid)
+        res = [None for _ in range(dirnum)]
+        mask = [None for _ in range(dirnum)]
+        if dirnum == 8:
+            for r in range(grid[0]):
+                for c in range(grid[1]):
+                    d = DIRS8[r][c]
+                    res[d] = tex[r][c]
+                    mask[d] = masko[r][c]
+        else:
+            d = 0
+            for r in range(grid[0]):
+                for c in range(grid[1]):
+                    res[d] = tex[r][c]
+                    mask[d] = masko[r][c]
+                    d += 1
+            res = res[:d] * (8 // d)
+            mask = mask[:d] * (8 // d)
         return res, mask, pic_size
     def draw(self, screen):
         screen.blit(self.tex[self.dir], (self.realx, self.realy + self.realy_shake)) 
@@ -94,8 +90,11 @@ class Obj(object):
         self.want_to_move = False
 
     def moveto(self, pos):
-        self.realPos[0] = self.tarPos[0] = pos[0] * 32
-        self.realPos[1] = self.tarPos[1] = pos[1] * 32
+        rpos = (pos[0] * 32, pos[1] * 32)
+        self.real_moveto(rpos)
+    def real_moveto(self, rpos): 
+        self.realPos[0] = self.tarPos[0] = rpos[0] - self.pic_size[0] // 2
+        self.realPos[1] = self.tarPos[1] = rpos[1] - self.pic_size[1] // 2
     @property
     def realx(self):
         return self.realPos[0]
@@ -117,9 +116,15 @@ class Obj(object):
     @property
     def x(self):
         return int(self.center_x // 32)
+    @x.setter
+    def x(self, value):
+        self.tarPos[0] = value * 32 - self.pic_size[0] // 2
     @property
     def y(self):
         return int(self.center_y // 32)
+    @y.setter
+    def y(self, value):
+        self.tarPos[1] = value * 32 - self.pic_size[1] // 2
     def running(self):
         return self.realPos[0] != self.tarPos[0] or self.realPos[1] != self.tarPos[1]
     def througed(self, v):
@@ -133,7 +138,6 @@ class Obj(object):
         dy = ty - iy * 32
         # 9 GRIDS
         gr = np.zeros((32 * 3, 32 * 3)).astype(np.bool) # ground mask
-        mm = np.zeros((32 * 3, 32 * 3)).astype(np.bool) # car mask
         for ax in [-1,0,1]:
             nx = ix + ax
             if nx < 0 or nx >= Obj.mapper.width:
@@ -159,8 +163,8 @@ class Obj(object):
         mx = max_x - min_x
         my = max_y - min_y
         bb = gr[min_y:max_y, min_x:max_x] & self.mask[self.dir][qy:my + qy, qx:mx + qx]
-        nb = np.sum(bb[DIR_MASK[self.dir]])
-        return nb < 16
+        nb = np.sum(bb & mygame.get_dir_mask(self.dir, (w,h))[qy:my + qy, qx:mx + qx])
+        return nb < 8
 
     def go_dir(self, d):
         if self.dir != d:
@@ -173,6 +177,10 @@ class Obj(object):
                 if self.througed(bv):
                     self.tarPos[0] += bv[0]
                     self.tarPos[1] += bv[1]
+                    return True
+                else:
+                    return False
+        return True 
     def change_dir(self, d):
         if self.turning_clock < TURNING_CLOCK:
             return
