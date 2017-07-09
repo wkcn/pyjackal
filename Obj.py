@@ -20,6 +20,25 @@ DIRS_C = 1.0
 DIRS_D = 0.8
 DIRS8_V = [(0.0, -DIRS_C), (-DIRS_D, -DIRS_D), (-DIRS_C, 0.0), (-DIRS_D, DIRS_D), (0.0, DIRS_C), (DIRS_D, DIRS_D), (DIRS_C, 0.0), (DIRS_D, -DIRS_D)]
 
+DIR_MASK = [np.zeros((32,32)).astype(np.bool) for _ in range(8)]
+DIR_MASK[0][:16, :] = 1
+DIR_MASK[4][16:, :] = 1
+DIR_MASK[2][:, :16] = 1
+DIR_MASK[6][:, 16:] = 1
+
+def set_dir_mask(d, func):
+    for r in range(32):
+        for c in range(32):
+            if func(c, r):
+                DIR_MASK[d][r, c] = True
+
+set_dir_mask(1, lambda x,y : 31 - x >= y)
+set_dir_mask(5, lambda x,y : 31 - x <= y)
+set_dir_mask(3, lambda x,y : y >= x)
+set_dir_mask(7, lambda x,y : y <= x)
+for d in range(8):
+    DIR_MASK[d] = (DIR_MASK[d] == 1)
+
 TURNING_CLOCK = 50
 SHAKING_CLOCK = 60
 
@@ -89,16 +108,26 @@ class Obj(object):
     @realy.setter
     def realy(self, value):
         self.realPos[1] = value
+    @property
+    def center_x(self):
+        return self.realx + self.pic_size[0] // 2
+    @property
+    def center_y(self):
+        return self.realy + self.pic_size[1] // 2
     def running(self):
         return self.realPos[0] != self.tarPos[0] or self.realPos[1] != self.tarPos[1]
     def througed(self, v):
-        tx = int(self.tarPos[0] + v[0])
-        ty = int(self.tarPos[1] + v[1])
+        # next center position
+        tx = int(self.center_x + v[0])
+        ty = int(self.center_y + v[1])
         ix = (tx) // 32
         iy = (ty) // 32
+        # offset
+        dx = tx - ix * 32
+        dy = ty - iy * 32
         # 9 GRIDS
-        gr = np.zeros((32 * 3, 32 * 3)).astype(np.bool)
-        mm = np.zeros((32 * 3, 32 * 3)).astype(np.bool)
+        gr = np.zeros((32 * 3, 32 * 3)).astype(np.bool) # ground mask
+        mm = np.zeros((32 * 3, 32 * 3)).astype(np.bool) # car mask
         for ax in [-1,0,1]:
             nx = ix + ax
             if nx < 0 or nx >= Obj.mapper.width:
@@ -109,17 +138,22 @@ class Obj(object):
                     continue
                 tid = Obj.mapper.tids[ny][nx] 
                 gr[(ay+1)*32:(ay+2)*32, (ax+1)*32:(ax+2)*32] = Obj.mapper.mask[tid]
-        dx = tx - ix * 32
-        dy = ty - iy * 32
         w, h = self.pic_size
-        min_x = (dx + 32)
-        min_y = (dy + 32)
-        max_x = min(min_x + w, 32 * 3)
-        max_y = min(min_y + h, 32 * 3)
+        # left top position
+        rx = dx - w // 2 + 32
+        ry = dy - h // 2 + 32
+        # ignored parts
+        qx = max(0, -rx)
+        qy = max(0, -ry)
+        # bounding border
+        min_x = max(0, rx)
+        min_y = max(0, ry)
+        max_x = min(rx + w, 32 * 3)
+        max_y = min(ry + h, 32 * 3)
         mx = max_x - min_x
         my = max_y - min_y
-        bb = gr[min_y:max_y, min_x:max_x] & self.mask[self.dir][:my, :mx]
-        nb = np.sum(bb)
+        bb = gr[min_y:max_y, min_x:max_x] & self.mask[self.dir][qy:my + qy, qx:mx + qx]
+        nb = np.sum(bb[DIR_MASK[self.dir]])
         return nb < 16
 
     def go_dir(self, d):
