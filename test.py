@@ -66,5 +66,4 @@ while 1:
         NowFPS = fps
         cntClock = 0
         cntFrame = 0
-    lastClock = nowClock
     

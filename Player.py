@@ -4,7 +4,7 @@ from Obj import *
 from Bullet import *
 
 CLOCK_PER_SHOT = 150 
-SHOT_V = 6.5
+SHOT_V = 6.3
 
 class Player(Obj):
     def __init__(self):

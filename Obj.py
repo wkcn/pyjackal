@@ -20,8 +20,8 @@ DIRS_C = 1.0
 DIRS_D = math.sqrt(2.0) / 2.0
 DIRS8_V = [(0.0, -DIRS_C), (-DIRS_D, -DIRS_D), (-DIRS_C, 0.0), (-DIRS_D, DIRS_D), (0.0, DIRS_C), (DIRS_D, DIRS_D), (DIRS_C, 0.0), (DIRS_D, -DIRS_D)]
 
-TURNING_CLOCK = 50
-SHAKING_CLOCK = 60
+TURNING_CLOCK = 70
+SHAKING_CLOCK = 70
 
 class Obj(object):
     mapper = None
@@ -33,7 +33,7 @@ class Obj(object):
         self.turning_clock = 0 
         self.moving_clock = 0
         self.shaking_clock = 0
-        self.v = 2.0
+        self.v = 0.6
         self.can_move = True
         self.want_to_move = False
         self.num_dir = num_dir

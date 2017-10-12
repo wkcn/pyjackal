@@ -2,7 +2,6 @@
 import mygame
 import pytmx 
 from Defines import *
-import matplotlib.pyplot as plt
 
 GROUND_COLORS = [(255,162,0), (198,113,0)]
 class Mapper:

@@ -12,8 +12,8 @@ def print_bits(mask):
     for r in range(rows):
         for c in range(cols):
             if mask[r,c]:
-                print 1,
+                print (1,)
             else:
-                print 0,
-        print ""
+                print (0,)
+        print ("")
 
