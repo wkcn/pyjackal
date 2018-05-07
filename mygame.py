@@ -90,7 +90,7 @@ DIR_MASKS[32] = mask
 
 def get_dir_mask(d, siz):
     if siz not in DIR_MASKS:
-        DIR_MASKS[siz] = [imresize(DIR_MASKS[32][d], siz, interp = "nearest") != 0 for d in range(8)] 
+        DIR_MASKS[siz] = [imresize(DIR_MASKS[32][d].astype(np.uint8), siz, interp = "nearest") != 0 for d in range(8)] 
     return DIR_MASKS[siz][d]
 
 
