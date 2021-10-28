@@ -3,10 +3,10 @@
 ### 安装
 
 - 安装python
-- 安装第三方库numpy, scipy, pygame和pytmx
+- 安装第三方库numpy, scipy, pillow, pygame和pytmx
 
 ```bash
-pip install numpy scipy pygame pytmx 
+pip install numpy scipy pillow pygame pytmx
 ```
 
 ### 运行方式

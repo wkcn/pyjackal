@@ -2,7 +2,7 @@
 from pygame.locals import *
 import pygame
 import ScreenBox
-from scipy.misc import imread, imsave, imresize
+from PIL import Image
 import numpy as np
 
 class image:
@@ -90,7 +90,7 @@ DIR_MASKS[32] = mask
 
 def get_dir_mask(d, siz):
     if siz not in DIR_MASKS:
-        DIR_MASKS[siz] = [imresize(DIR_MASKS[32][d].astype(np.uint8), siz, interp = "nearest") != 0 for d in range(8)] 
+        DIR_MASKS[siz] = [np.asarray(Image.fromarray(DIR_MASKS[32][d].astype(np.uint8)).resize(siz, Image.NEAREST)) != 0 for d in range(8)] 
     return DIR_MASKS[siz][d]
 
 
@@ -117,7 +117,7 @@ sub_mask = {}
 def load_sub_mask(filename, siz):
     d, f = siz
     if filename not in sub_mask:
-        im = imread(filename)
+        im = np.asarray(Image.open(filename))
         ph, pw, t = im.shape
         w = pw // f
         h = ph // d
@@ -162,7 +162,7 @@ grid_mask = {}
 def load_grid_mask(filename, siz, colors = []):
     w, h = siz
     if filename not in grid_mask:
-        im = imread(filename)
+        im = np.asarray(Image.open(filename))
         ph, pw, t = im.shape
         f = pw // w
         d = ph // h
