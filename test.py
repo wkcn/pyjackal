@@ -30,7 +30,7 @@ font = mygame.font.SysFont(default_font, 20)
 cntClock = 0
 cntFrame = 0
 cntNetwork = 0
-lastClock = time.clock() * 1000
+lastClock = time.time() * 1000
 NowFPS = 0
 
 while 1:
@@ -42,7 +42,7 @@ while 1:
                 exit(0)
           
 
-    nowClock = time.clock() * 1000
+    nowClock = time.time() * 1000
     intervalClock = nowClock - lastClock
     lastClock = nowClock
 
